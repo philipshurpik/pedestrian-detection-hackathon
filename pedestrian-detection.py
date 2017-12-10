@@ -113,18 +113,19 @@ def get_process(frame, boxes):
         cv2.line(frame, (line[0], line[1]), (line[2], line[3]), (0, 255, 255), 2)
 
     # info = [(box, estimate_distance(box)) for box in boxes]
-    distances = getDistances(lines[0], lines[1], 20, boxes)
+    distances = getDistances(lines[0], lines[1], 10, boxes)
     info = zip(boxes, distances)
     # road_segment = run_segmentation(frame)
 
     def draw_info(frame, info):
         def estimate_color(box, dist):
-            if dist > 30:
-                dist = 30
+            MAX_DIST = 12.0
+            if dist > MAX_DIST:
+                dist = MAX_DIST
             elif dist < 0:
                 dist = 0.0
-            g = 255 * (dist / 30.0)
-            r = 255 * ((30 - dist) / 30.0)
+            g = 255 * (dist / MAX_DIST)
+            r = 255 * ((MAX_DIST - dist) / MAX_DIST)
             return (0, g, r)
 
         for box, distance in info:
@@ -141,7 +142,7 @@ def get_process(frame, boxes):
 
             color = estimate_color(box, distance)
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 5)
-            cv2.putText(frame, str(distance), (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+            cv2.putText(frame, ('%.1f' % distance) + 'm', (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
     draw_info(frame, info)
     return frame
