@@ -102,6 +102,8 @@ def infer(video_file, use_images=True):
 
             if video_file and not use_images:
                 video = cv2.VideoCapture(video_file)  # location of the input video
+                cv2.startWindowThread()
+                cv2.namedWindow("preview")
 
                 frame_num = 0
                 while video.isOpened():  # the following loop runs as long as there are frames to be read....
@@ -112,9 +114,11 @@ def infer(video_file, use_images=True):
                         break
                     else:  # at each frame read....
                         frame_result = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
-                        cv2.imshow('frame', frame)
+                        cv2.imshow('frame', frame_result)
                         #cv2.imwrite('save_images/frame'+str(frame_num)+'.jpg', frame_result)
                         frame_num+=1
+                    if cv2.waitKey(1) & 0xFF in (ord('q'), 0x1B, 0x0D):
+                        break
 
                 video.release()  # When everything done, release the capture...
                 cv2.destroyAllWindows()  # closing the display window automatically...
