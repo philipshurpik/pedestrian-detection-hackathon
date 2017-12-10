@@ -106,6 +106,7 @@ def infer(video_file, use_images=True):
                 cv2.namedWindow("preview")
 
                 frame_num = 0
+                frame_result = None
                 while video.isOpened():  # the following loop runs as long as there are frames to be read....
                     ret, frame = video.read()  # the array 'frame' represents the current frame from the video and the variable ret is used to check if the
                     # frame is read. ret gives True if the frame is read else gives false
@@ -113,10 +114,10 @@ def infer(video_file, use_images=True):
                         cv2.destroyAllWindows()  # if there are no more frames, close the display window....
                         break
                     else:  # at each frame read....
-                        frame_result = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
+                        if frame_num % 2 == 0:
+                            frame_result = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
                         cv2.imshow('frame', frame_result)
-                        #cv2.imwrite('save_images/frame'+str(frame_num)+'.jpg', frame_result)
-                        frame_num+=1
+                        frame_num += 1
                     if cv2.waitKey(1) & 0xFF in (ord('q'), 0x1B, 0x0D):
                         break
 
