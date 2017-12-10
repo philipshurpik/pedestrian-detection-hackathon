@@ -193,22 +193,26 @@ def infer(video_file, use_images=True):
                         if frame_num % 3 == 0:
                             frame_result, new_boxes = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
 
-                            print(new_boxes)
+                            from imutils.object_detection import non_max_suppression
+
+                            # pick = non_max_suppression(new_boxes, probs=None, overlapThresh=0.65)
+                            # new_boxes = pick
+
                             fb = []
                             for box in new_boxes:
                                 box = [
                                     (box[1] + box[3]) * 0.5,
-                                    (box[0] + box[2]) * 0.5,
+                                    (box[0] + box[2]) * 0.5 / frame_diff,
                                     box[3] - box[1],
-                                    box[2] - box[0],
+                                    (box[2] - box[0]) / frame_diff,
                                 ]
                                 fb.append(box)
                             new_boxes = fb
-
+                            frame_result = frame_result[: int(frame_0 * coef), :, :]
 
                             frame_result = get_process(frame_result, new_boxes)
 
-                        frame_result = frame_result[: int(frame_0 * coef), :, :]
+                        #frame_result = frame_result[: int(frame_0 * coef), :, :]
                         print(frame_result.shape)
 
                         cv2.imshow('frame', frame_result)
