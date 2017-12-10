@@ -182,7 +182,7 @@ def infer(video_file, use_images=True):
                     # print(frame.shape)
                     fuck = min(frame.shape[0], frame.shape[1])
                     #frame = frame[0:fuck, 0:fuck, :]
-                    coef = 0.3 if frame.shape[0] > 1000 else 0.7
+                    coef = 0.5 if frame.shape[0] > 1000 else 0.7
 
                     frame, frame_diff = make_square(frame)
 
@@ -240,5 +240,9 @@ def infer(video_file, use_images=True):
                 cv2.destroyAllWindows()  # closing the display window automatically...
 
 
-video_file = 'test_videos/pedestrian-1.mp4'
+
+#video_file = 'test_videos/test7_0.mp4'
+#video_file = 'test_videos/test7_1.mp4'
+#video_file = 'test_videos/test7_6.mp4'
+video_file = 'test_videos/test7_2.mp4'
 infer(video_file, use_images=False)
