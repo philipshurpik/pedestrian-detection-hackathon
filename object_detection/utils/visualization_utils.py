@@ -455,6 +455,7 @@ def visualize_boxes_and_labels_on_image_array(image,
       #print('box', box)
 
       n_boxes.append(box)
+      continue
 
       if instance_masks is not None:
         box_to_instance_masks_map[box] = instance_masks[i]
@@ -481,31 +482,31 @@ def visualize_boxes_and_labels_on_image_array(image,
               classes[i] % len(STANDARD_COLORS)]
 
   # Draw all boxes onto image.
-  for box, color in box_to_color_map.items():
-    ymin, xmin, ymax, xmax = box
-    if instance_masks is not None:
-      draw_mask_on_image_array(
-          image,
-          box_to_instance_masks_map[box],
-          color=color
-      )
-    draw_bounding_box_on_image_array(
-        image,
-        ymin,
-        xmin,
-        ymax,
-        xmax,
-        color=color,
-        thickness=line_thickness,
-        display_str_list=box_to_display_str_map[box],
-        use_normalized_coordinates=use_normalized_coordinates)
-    if keypoints is not None:
-      draw_keypoints_on_image_array(
-          image,
-          box_to_keypoints_map[box],
-          color=color,
-          radius=line_thickness / 2,
-          use_normalized_coordinates=use_normalized_coordinates)
+  # for box, color in box_to_color_map.items():
+  #   ymin, xmin, ymax, xmax = box
+  #   if instance_masks is not None:
+  #     draw_mask_on_image_array(
+  #         image,
+  #         box_to_instance_masks_map[box],
+  #         color=color
+  #     )
+  #   draw_bounding_box_on_image_array(
+  #       image,
+  #       ymin,
+  #       xmin,
+  #       ymax,
+  #       xmax,
+  #       color=color,
+  #       thickness=line_thickness,
+  #       display_str_list=box_to_display_str_map[box],
+  #       use_normalized_coordinates=use_normalized_coordinates)
+  #   if keypoints is not None:
+  #     draw_keypoints_on_image_array(
+  #         image,
+  #         box_to_keypoints_map[box],
+  #         color=color,
+  #         radius=line_thickness / 2,
+  #         use_normalized_coordinates=use_normalized_coordinates)
 
   return image, n_boxes
 
