@@ -57,8 +57,8 @@ def load_image_into_numpy_array(image):
       (im_height, im_width, 3)).astype(np.uint8)
 
 
-def infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections):
-    image_np = load_image_into_numpy_array(frame)
+def infer_frame(image_np, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections):
+
     # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
     image_np_expanded = np.expand_dims(image_np, axis=0)
     # Actual detection.
@@ -97,11 +97,13 @@ def infer(video_file, use_images=True):
                 for image_path in TEST_IMAGE_PATHS:
                     image = Image.open(image_path)
                     print(image_path)
-                    infer_frame(image, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
+                    image_np = load_image_into_numpy_array(image)
+                    infer_frame(image_np, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
 
-            if video_file:
+            if video_file and not use_images:
                 video = cv2.VideoCapture(video_file)  # location of the input video
 
+                frame_num = 0
                 while video.isOpened():  # the following loop runs as long as there are frames to be read....
                     ret, frame = video.read()  # the array 'frame' represents the current frame from the video and the variable ret is used to check if the
                     # frame is read. ret gives True if the frame is read else gives false
@@ -109,11 +111,14 @@ def infer(video_file, use_images=True):
                         cv2.destroyAllWindows()  # if there are no more frames, close the display window....
                         break
                     else:  # at each frame read....
-                        frame = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
+                        frame_result = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
                         cv2.imshow('frame', frame)
+                        #cv2.imwrite('save_images/frame'+str(frame_num)+'.jpg', frame_result)
+                        frame_num+=1
+
                 video.release()  # When everything done, release the capture...
                 cv2.destroyAllWindows()  # closing the display window automatically...
 
 
 video_file = 'test_videos/pedestrian-1.mp4'
-infer(video_file, use_images=True)
+infer(video_file, use_images=False)
