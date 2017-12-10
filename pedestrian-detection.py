@@ -76,7 +76,7 @@ def infer_frame(image_np, sess, image_tensor, detection_boxes, detection_scores,
         np.squeeze(scores),
         category_index,
         use_normalized_coordinates=True,
-        line_thickness=8)
+        line_thickness=1)
     return image_np
 
 
@@ -110,12 +110,19 @@ def infer(video_file, use_images=True):
                 while video.isOpened():  # the following loop runs as long as there are frames to be read....
                     ret, frame = video.read()  # the array 'frame' represents the current frame from the video and the variable ret is used to check if the
                     # frame is read. ret gives True if the frame is read else gives false
+                    print(frame.shape)
+                    fuck = min(frame.shape[0], frame.shape[1])
+                    #frame = frame[0:fuck, 0:fuck, :]
+                    coef = 0.3 if frame.shape[0] > 1000 else 0.7
+
+                    frame = cv2.resize(frame, (0, 0), fx=coef, fy=coef)
                     if frame is None:
                         cv2.destroyAllWindows()  # if there are no more frames, close the display window....
                         break
                     else:  # at each frame read....
-                        if frame_num % 2 == 0:
+                        if frame_num % 3 == 0:
                             frame_result = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
+                        #frame_result = cv2.resize(frame_result, (600,600))
                         cv2.imshow('frame', frame_result)
                         frame_num += 1
                     if cv2.waitKey(1) & 0xFF in (ord('q'), 0x1B, 0x0D):
@@ -125,5 +132,5 @@ def infer(video_file, use_images=True):
                 cv2.destroyAllWindows()  # closing the display window automatically...
 
 
-video_file = 'test_videos/pedestrian-1.mp4'
+video_file = 'test_videos/pedestrian-3.mp4'
 infer(video_file, use_images=False)

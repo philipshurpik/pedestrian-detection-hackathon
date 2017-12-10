@@ -161,7 +161,7 @@ def draw_bounding_box_on_image(image,
   draw.line([(left, top), (left, bottom), (right, bottom),
              (right, top), (left, top)], width=thickness, fill=color)
   try:
-    font = ImageFont.truetype('arial.ttf', 24)
+    font = ImageFont.truetype('arial.ttf', 14)
   except IOError:
     font = ImageFont.load_default()
 
@@ -391,9 +391,9 @@ def visualize_boxes_and_labels_on_image_array(image,
                                               keypoints=None,
                                               use_normalized_coordinates=False,
                                               max_boxes_to_draw=20,
-                                              min_score_thresh=.5,
+                                              min_score_thresh=.2,
                                               agnostic_mode=False,
-                                              line_thickness=4):
+                                              line_thickness=3):
   """Overlay labeled boxes on an image with formatted scores and label names.
 
   This function groups boxes that correspond to the same location
@@ -436,7 +436,18 @@ def visualize_boxes_and_labels_on_image_array(image,
   box_to_keypoints_map = collections.defaultdict(list)
   if not max_boxes_to_draw:
     max_boxes_to_draw = boxes.shape[0]
+
+  #print(boxes[0])
+  #print(scores[0])
+  #print(classes[0])
+  #exit(0)
+
   for i in range(min(max_boxes_to_draw, boxes.shape[0])):
+    #if classes[i] != 1 and classes[i] != 3:
+    if classes[i] != 1:
+      print('skip', classes[i])
+      continue
+
     if scores is None or scores[i] > min_score_thresh:
       box = tuple(boxes[i].tolist())
       if instance_masks is not None:
