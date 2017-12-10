@@ -80,6 +80,16 @@ def infer_frame(image_np, sess, image_tensor, detection_boxes, detection_scores,
     return image_np
 
 
+def make_square(frame):
+    diff = np.abs(frame.shape[0] - frame.shape[1])
+    frame_diff = frame.shape[0]/frame.shape[1]
+    if frame.shape[0] < frame.shape[1]:
+        frame = cv2.copyMakeBorder(frame, 0, diff, 0, 0, cv2.BORDER_REPLICATE)
+    else:
+        frame = cv2.copyMakeBorder(frame, 0, 0, 0, diff, cv2.BORDER_REPLICATE)
+    return frame, frame_diff
+
+
 def infer(video_file, use_images=True):
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
@@ -110,10 +120,13 @@ def infer(video_file, use_images=True):
                 while video.isOpened():  # the following loop runs as long as there are frames to be read....
                     ret, frame = video.read()  # the array 'frame' represents the current frame from the video and the variable ret is used to check if the
                     # frame is read. ret gives True if the frame is read else gives false
-                    print(frame.shape)
+                    frame_0 = frame.shape[0]
+                    # print(frame.shape)
                     fuck = min(frame.shape[0], frame.shape[1])
                     #frame = frame[0:fuck, 0:fuck, :]
                     coef = 0.3 if frame.shape[0] > 1000 else 0.7
+
+                    frame, frame_diff = make_square(frame)
 
                     frame = cv2.resize(frame, (0, 0), fx=coef, fy=coef)
                     if frame is None:
@@ -123,6 +136,9 @@ def infer(video_file, use_images=True):
                         if frame_num % 3 == 0:
                             frame_result = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
                         #frame_result = cv2.resize(frame_result, (600,600))
+                        frame_result = frame_result[: int(frame_0 * coef), :, :]
+                        print(frame_result.shape)
+
                         cv2.imshow('frame', frame_result)
                         frame_num += 1
                     if cv2.waitKey(1) & 0xFF in (ord('q'), 0x1B, 0x0D):
@@ -132,5 +148,5 @@ def infer(video_file, use_images=True):
                 cv2.destroyAllWindows()  # closing the display window automatically...
 
 
-video_file = 'test_videos/pedestrian-3.mp4'
+video_file = 'test_videos/pedestrian-2.mp4'
 infer(video_file, use_images=False)
