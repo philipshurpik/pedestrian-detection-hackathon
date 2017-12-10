@@ -6,6 +6,7 @@ import tensorflow as tf
 import time
 import cv2
 from PIL import Image
+from run import *
 
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
@@ -69,7 +70,7 @@ def infer_frame(image_np, sess, image_tensor, detection_boxes, detection_scores,
     finish = time.time()
     print("image", finish - start)
     # Visualization of the results of a detection.
-    vis_util.visualize_boxes_and_labels_on_image_array(
+    image_np, new_boxes = vis_util.visualize_boxes_and_labels_on_image_array(
         image_np,
         np.squeeze(boxes),
         np.squeeze(classes).astype(np.int32),
@@ -77,7 +78,7 @@ def infer_frame(image_np, sess, image_tensor, detection_boxes, detection_scores,
         category_index,
         use_normalized_coordinates=True,
         line_thickness=1)
-    return image_np
+    return image_np, new_boxes
 
 
 def make_square(frame):
@@ -88,6 +89,62 @@ def make_square(frame):
     else:
         frame = cv2.copyMakeBorder(frame, 0, 0, 0, diff, cv2.BORDER_REPLICATE)
     return frame, frame_diff
+
+
+lines = None
+
+def get_process(frame, boxes):
+    global lines
+
+
+
+    if lines == None:
+        lines = getSeparateLines(frame)
+
+    # draw line
+    for nline in lines:
+        line = np.copy(nline)
+        line[0] *= frame.shape[1]
+        line[1] *= frame.shape[0]
+        line[2] *= frame.shape[1]
+        line[3] *= frame.shape[0]
+        line = [int(x) for x in line]
+
+        cv2.line(frame, (line[0], line[1]), (line[2], line[3]), (0, 255, 255), 2)
+
+    # info = [(box, estimate_distance(box)) for box in boxes]
+    distances = getDistances(lines[0], lines[1], 20, boxes)
+    info = zip(boxes, distances)
+    # road_segment = run_segmentation(frame)
+
+    def draw_info(frame, info):
+        def estimate_color(box, dist):
+            if dist > 30:
+                dist = 30
+            elif dist < 0:
+                dist = 0.0
+            g = 255 * (dist / 30.0)
+            r = 255 * ((30 - dist) / 30.0)
+            return (0, g, r)
+
+        for box, distance in info:
+            x, y, w, h = box
+
+            x *= frame.shape[1]
+            y *= frame.shape[0]
+            w *= frame.shape[1]
+            h *= frame.shape[0]
+
+            x -= w * 0.5
+            y -= h * 0.5
+            x, y, w, h = int(x), int(y), int(w), int(h)
+
+            color = estimate_color(box, distance)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 5)
+            cv2.putText(frame, str(distance), (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+
+    draw_info(frame, info)
+    return frame
 
 
 def infer(video_file, use_images=True):
@@ -134,8 +191,23 @@ def infer(video_file, use_images=True):
                         break
                     else:  # at each frame read....
                         if frame_num % 3 == 0:
-                            frame_result = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
-                        #frame_result = cv2.resize(frame_result, (600,600))
+                            frame_result, new_boxes = infer_frame(frame, sess, image_tensor, detection_boxes, detection_scores, detection_classes, num_detections)
+
+                            print(new_boxes)
+                            fb = []
+                            for box in new_boxes:
+                                box = [
+                                    (box[1] + box[3]) * 0.5,
+                                    (box[0] + box[2]) * 0.5,
+                                    box[3] - box[1],
+                                    box[2] - box[0],
+                                ]
+                                fb.append(box)
+                            new_boxes = fb
+
+
+                            frame_result = get_process(frame_result, new_boxes)
+
                         frame_result = frame_result[: int(frame_0 * coef), :, :]
                         print(frame_result.shape)
 
@@ -148,5 +220,5 @@ def infer(video_file, use_images=True):
                 cv2.destroyAllWindows()  # closing the display window automatically...
 
 
-video_file = 'test_videos/pedestrian-2.mp4'
+video_file = 'test_videos/pedestrian-1.mp4'
 infer(video_file, use_images=False)

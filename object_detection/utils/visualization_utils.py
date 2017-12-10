@@ -442,14 +442,20 @@ def visualize_boxes_and_labels_on_image_array(image,
   #print(classes[0])
   #exit(0)
 
+  n_boxes = []
+
   for i in range(min(max_boxes_to_draw, boxes.shape[0])):
     #if classes[i] != 1 and classes[i] != 3:
     if classes[i] != 1:
-      print('skip', classes[i])
+      #print('skip', classes[i])
       continue
 
     if scores is None or scores[i] > min_score_thresh:
       box = tuple(boxes[i].tolist())
+      #print('box', box)
+
+      n_boxes.append(box)
+
       if instance_masks is not None:
         box_to_instance_masks_map[box] = instance_masks[i]
       if keypoints is not None:
@@ -501,7 +507,7 @@ def visualize_boxes_and_labels_on_image_array(image,
           radius=line_thickness / 2,
           use_normalized_coordinates=use_normalized_coordinates)
 
-  return image
+  return image, n_boxes
 
 
 def add_cdf_image_summary(values, name):
