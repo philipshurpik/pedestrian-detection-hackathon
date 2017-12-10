@@ -198,6 +198,21 @@ def infer(video_file, use_images=True):
                             # pick = non_max_suppression(new_boxes, probs=None, overlapThresh=0.65)
                             # new_boxes = pick
 
+                            def nms(rects):
+                                b = []
+                                w = 1000.
+                                for rect in rects:
+                                    b.append(np.array([int(rect[0] * w), int(rect[1] * w), int(rect[2] * w), int(rect[3] * w)]))
+                                b = np.array(b, dtype=np.int32)
+                                pick = non_max_suppression(b, probs=None, overlapThresh=0.3)
+
+                                bb = []
+                                for rect in pick:
+                                    bb.append([rect[0] / w, rect[1] / w, rect[2] / w, rect[3] / w])
+
+                                return bb
+                            new_boxes = nms(new_boxes)
+
                             fb = []
                             for box in new_boxes:
                                 box = [
